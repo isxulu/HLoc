@@ -5,11 +5,11 @@ For the MuYuan contract, improvements have been made to the Hloc algorithm.
 
 # Sample
 
-## 数据采集
+## Data Collection
 
 ### docker(env)
 
-通过镜像创建容器：
+Creating a container through mirroring:
 
 ```bash
 docker run -it  --net=host  \
@@ -23,68 +23,67 @@ docker run -it  --net=host  \
    harbor.cvgl.lab/library/vslam-data-collection-platform:v1.1.3
 ```
 
-启动容器：
+Starting a container:
 
 ```bash
 docker start collect
 ```
 
-运行docker镜像：
+Running a Docker image:
 
 ```bash
-docker exec -it collect bash  # 其中collect_data为容器名
+docker exec -it collect bash  
 ```
 
 ### ROS
 
-#### 基本命令
+#### Basic Command
 
-配置工作空间：
+Configuring the workspace:
 
 ```bash
 source /ws/install/setup.bash
 ```
 
-查看当前所有的话题：
+Viewing all current topics:
 
 ```bash
 ros2 topic list
 ```
 
-查看某个话题的信息发送的频率：
+Viewing the frequency of information sent for a specific topic:
 
 ```bash
 ros2 topic hz /imu/data  
 ```
 
-打印某个话题的内容：
+Printing the content of a specific topic:
 
 ```bash
 ros2 topic epoch /imu/data
 ```
 
-#### 数据采集
+#### Data collection
 
-启动左相机节点：
+Start the left camera node.
 
 ```bash
 ros2 launch pylon_ros2_camera_wrapper 1_pylon_ros2_camera.launch.py
 ```
 
-启动右相机节点：
+Start the right camera node.
 
 ```bash
 ros2 launch pylon_ros2_camera_wrapper 2_pylon_ros2_camera.launch.py
 ```
 
-录制相机数据包：
+Record camera data packets.
 
 ```bash
-cd /data/bagfiles  # 将录制文件存在/data/bagfiles目录下
+cd /data/bagfiles 
 ros2 bag record /my_camera_1/pylon_ros2_camera_node/image_raw \
                 /my_camera_2/pylon_ros2_camera_node/image_raw
 
-# 也可以分开采集，启动两个终端
 ```
 
 ```bash
@@ -93,21 +92,21 @@ ros2 bag record /my_camera_1/pylon_ros2_camera_node/image_raw \
                 /imu/data /filter/positionlla
 ```
 
-更推荐采用`muti-cameras`中方法.
+It is recommended to use the method described in the "multi-cameras" section.
 
-启动激光雷达节点：
+Start the LiDAR node.
 
 ```bash
 ros2 launch livox_ros_driver2 msg_MID360_launch.py
 ```
 
-录制激光数据包：
+Record LiDAR data packets.
 
 ```bash
 ros2 bag record /livox/lidar
 ```
 
-启动IMU节点：
+Start the IMU node.
 
 ```bash
 usermod -aG dialout root
@@ -115,47 +114,47 @@ chmod 777 /dev/ttyUSB0
 ros2 launch bluespace_ai_xsens_mti_driver xsens_mti_node.launch.py
 ```
 
-录制IMU数据包：
+Record IMU data packets.
 
 ```bash
 ros2 bag record /imu/data
 ```
 
-录制GPS数据包:
+Record GPS data packets.
 ```bash
 ros2 bag record /gnss
 ```
 
-#### 数据可视化
+#### Data visualization.
 
-*可视化仅支持回放相机录制的数据包。*
+*Data visualization is only supported for playback of camera-recorded data packets.*
 
-执行某个数据包：
+Execute a specific data packet.
 
 ```bash
-ros2 bag play *.db3 --loop  # --loop选项用于指定循环播放
+ros2 bag play *.db3 --loop  # The `--loop` option is used to specify looping playback.
 ```
 
-启动rviz进行可视化：
+Start RViz for visualization.
 
 ```bash
 ros2 run rviz2 rviz2
 
-# 可能需要在本地主机执行下方的命令赋予X server的权限
+# You may need to execute the following command on the local host to grant permissions to the X server.
 xhost +
 ```
 
-展示数据包信息：
+Displaying data packet information.
 
 ```bash
-ros2 bag info *.db3  # 名称依据具体的数据库而定
+ros2 bag info *.db3  
 ```
 
-#### 数据解压
+#### Data decompression.
 
-需要安装[GitHub - Kyungpyo-Kim/ROS2BagFileParsing: ROS2 Bag file parsing](https://github.com/Kyungpyo-Kim/ROS2BagFileParsing).
+Install [GitHub - Kyungpyo-Kim/ROS2BagFileParsing: ROS2 Bag file parsing](https://github.com/Kyungpyo-Kim/ROS2BagFileParsing) first.
 
-解压时可以执行以下命令：
+You can use the following command for decompression:
 
 ```bash
 source /ROS2BagFileParsing/dev_ws/src/ros2bag_parser/install/setup.bash
@@ -164,7 +163,6 @@ source /ROS2BagFileParsing/dev_ws/src/ros2bag_parser/install/setup.bash
 ros2 run ros2bag_parser ros2bag_parser_node
 ```
 
-shell中会输出解压软件的用法：
 
 ```
 Usage: 
@@ -172,28 +170,26 @@ Usage:
 <db3 file path> <output dir>
 ```
 
-只需要将其中的数据源和目录路径替换为自己的即可。
+**It is important to note that when decompressing camera data packets, it is required to have a "data" folder specified in the target directory. However, for the IMU-generated CSV files, they do not need to be placed within the "data" folder.**
 
-**特别需要注意的是，在解压相机数据包时，要求指定的目录下必须有data文件夹，而IMU生成的csv文件不需要在data文件中。**
+#### Camera calibration.
 
-#### 相机标定
+##### Method One
 
-##### 方法一
-
-启动对应的docker:
+Start the corresponding Docker container.
 
 ```bash
 docker stop wonderful_turing
 docker start wonderful_turing
 ```
 
-交互执行docker:
+Interactively execute Docker commands.
 
 ```bash
 docker exec -it wonderful_turing bash
 ```
 
-随后依次执行：
+And
 
 ```bash
 source /catkin_ws/devel/setup.bash
@@ -209,37 +205,33 @@ rosrun kalibr kalibr_calibrate_cameras \
 
 
 
-其中bag后的路径需要替换为自己的路径，如果采用ros2录制需要使用`rosbags-convert`将.db3转换为.bag文件(具体可以参考https://github.com/ethz-asl/kalibr/wiki/ROS2-Calibration-Using-Kalibr)，具体命令是：
+The path after "bag" needs to be replaced with your own path. If you are using ROS2 recording, you need to use rosbags-convert to convert the .db3 file to a .bag file (you can refer to https://github.com/ethz-asl/kalibr/wiki/ROS2-Calibration-Using-Kalibr for more details). The specific command is:
 
 ```bash
 rosbags-convert <ros2_bag_folder> --dst calib_01.bag
 ```
 
-其中`.bag`的文件名可以自己指定。
 
+##### Method Two
 
-##### 方法二
-
-直接在collect_data容器中，运行：
+Run the following command directly in the collect_data container:
 
 ```bash
-# 单目
+# Monocular.
 ros2 run camera_calibration cameracalibrator --size 10x10 --square 0.06 --ros-args --remap image:=/my_camera_2/pylon_ros2_camera_node/image_raw --remap camera:=/my_camera_2/pylon_ros2_camera_node
 
-# 双目
+# Stereo.
 ros2 run camera_calibration cameracalibrator --size 10x10 --square 0.06 --ros-args --remap right:=/my_camera_2/pylon_ros2_camera_node/image_raw --remap left:=/my_camera_1/pylon_ros2_camera_node/image_raw --remap left_camera:=/my_camera_1/pylon_ros2_camera_node --remap right_camera:=/my_camera_2/pylon_ros2_camera_node
 ```
 
-使用棋盘格实时录制视频，待进度条都变为绿色后，进行标定。
+Record a video in real-time using a chessboard grid. Once all the progress bars turn green, proceed with the calibration.
 
 
-#### 相机时间同步
+#### Camera time synchronization.
 
-**更推荐采取`multi-cameras`中的方法,无需执行下面的步骤.**
+**It is recommended to follow the method described in the "multi-cameras" section, which does not require executing the following steps.**
 
-依次执行下面的命令，可以将相机的时间戳与电脑主机同步，录制包并解压后得到的图像标题就是时间戳。
-
-IMU不需要同步。
+Execute the following commands sequentially to synchronize the camera timestamps with the host computer, record the data packets, and obtain the image titles as timestamps after decompression:
 
 ```bash
 ros2 service call /my_camera_1/pylon_ros2_camera_node/enable_ptp std_srvs/srv/SetBool "{data: true}"
